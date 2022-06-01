@@ -1,15 +1,14 @@
 package com.groww.chatbot.controller;
 
 import com.groww.chatbot.exception.NotFoundException;
+import com.groww.chatbot.exchanges.PlaceOrderRequest;
 import com.groww.chatbot.service.OrderService;
 import com.groww.chatbot.util.JwtUtil;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static com.groww.chatbot.config.ApiRoutes.*;
 
@@ -37,6 +36,19 @@ public class OrderController {
         String email = jwtUtil.extractEmailFromAuthHeader(authorizationHeader);
         try {
             return ResponseEntity.ok(orderService.getOrders(email));
+        } catch (NotFoundException e) {
+            log.error(e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PostMapping(PLACE_ORDER_URL)
+    public ResponseEntity<?> placeOrder(@RequestBody PlaceOrderRequest placeOrderRequest,
+                                        @RequestHeader("Authorization") String authorizationHeader) {
+        log.info("Place order request");
+        String email = jwtUtil.extractEmailFromAuthHeader(authorizationHeader);
+        try {
+            return ResponseEntity.ok(orderService.placeOrder(placeOrderRequest, email));
         } catch (NotFoundException e) {
             log.error(e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);

@@ -25,6 +25,8 @@ public class ApiRoutes {
 
     // get orders
     public static final String GET_ORDERS_URL = "/api/user/orders";
+    // place order
+    public static final String PLACE_ORDER_URL = "/api/user/place-order";
 
     // FaqController APIs
 
