@@ -1,4 +1,14 @@
-## Groww - Contextual Chatbot for Investors
+<div align="center">
+<h1 align="center">Groww</h1>
+
+<h2 align ="center">Contextual Chatbot for Investors</h2>
+
+<p align="center">
+   <a href="https://github.com/arpankundu4/groww-contextual-chatbot/blob/master/LICENSE">
+      <img src="https://img.shields.io/badge/License-MIT-green.svg" />
+   </a>
+</p>
+</div>
 
 RESTful backend of a contextual chatbot and website modelled on Groww. Exposes basic REST APIs of the website and the chatbot.
 
