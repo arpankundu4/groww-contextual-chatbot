@@ -2,7 +2,7 @@
 
 From terminal:
 
-1. Type `cd arpan-kundu-4-ME_CWOD_GROWW_CHATBOT`
+1. Type `cd groww-contextual-chatbot`
 2. Type `cd backend`
 3. Type `chmod +x setup.sh`
 4. Type `./setup.sh`
@@ -10,7 +10,7 @@ From terminal:
 Restore mongo-dump:
 
 1. Start MongoDB on `localhost:27017`
-2. Type `cd arpan-kundu-4-ME_CWOD_GROWW_CHATBOT`
+2. Type `cd groww-contextual-chatbot`
 3. Type `cd backend`
 4. Type `mongorestore mongodb://localhost:27017  dump/`
 
@@ -18,7 +18,7 @@ Restore mongo-dump:
 
 From terminal:
 
-1. Type `cd arpan-kundu-4-ME_CWOD_GROWW_CHATBOT`
+1. Type `cd groww-contextual-chatbot`
 2. Type `cd backend`
 3. Type `chmod +x server_run.sh`
 4. Type `./server_run.sh`
