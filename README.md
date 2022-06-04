@@ -10,6 +10,10 @@
 </p>
 </div>
 
+<div align="center">
+<img width="600" alt="groww-contextual-chatbot" src="https://user-images.githubusercontent.com/104189687/171997821-0873d0be-c3ef-4486-8bd7-3fd1d39a5917.png"
+</div>
+
 RESTful backend of a contextual chatbot and website modelled on Groww. Exposes basic REST APIs of the website and the chatbot.
 
 This project is a part of **Crio Launch (2022) Externship** with **Groww**.
