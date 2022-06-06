@@ -100,8 +100,8 @@ class UserIntegrationTest {
         LoginRequest loginRequest = new LoginRequest("test", " ");
         // mock post request
         mockMvc.perform(post(LOGIN_URL)
-                        .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isBadRequest());
     }
 

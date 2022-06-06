@@ -13,4 +13,6 @@ public interface FaqRepository extends MongoRepository<Faq, String> {
     // finds FAQs
     List<Faq> findAllByParentId(String parentId);
 
+    // deletes FAQs by parent id
+    void deleteAllByParentId(String id);
 }

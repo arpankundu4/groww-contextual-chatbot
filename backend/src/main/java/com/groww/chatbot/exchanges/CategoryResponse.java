@@ -8,7 +8,7 @@ import lombok.Data;
 
 
 @Data
-public class FaqCategoryResponse {
+public class CategoryResponse {
 
     private String id;
     private String title;

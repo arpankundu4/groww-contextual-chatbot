@@ -1,6 +1,8 @@
 <div align="center">
 <h1 align="center">Groww</h1>
 
+<a href = "http://localhost:8081/swagger-ui/">OpenAPI Docs</a>
+
 <h2 align ="center">Contextual Chatbot for Investors</h2>
 
 <p align="center">
@@ -42,7 +44,8 @@ This project is a part of **Crio Launch (2022) Externship** with **Groww**.
 4. JUnit
 5. Mockito
 6. Maven
-7. Postman
+7. OpenAPI
+8. Postman
 
 ### Setup
 

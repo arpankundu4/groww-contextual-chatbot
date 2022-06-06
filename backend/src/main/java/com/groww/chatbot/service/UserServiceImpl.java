@@ -3,6 +3,7 @@ package com.groww.chatbot.service;
 import com.groww.chatbot.dto.GrowwUserDetails;
 import com.groww.chatbot.exception.AlreadyExistsException;
 import com.groww.chatbot.exception.NotFoundException;
+import com.groww.chatbot.exchanges.EditUserRequest;
 import com.groww.chatbot.exchanges.RegistrationRequest;
 import com.groww.chatbot.exchanges.UserDetailsResponse;
 import com.groww.chatbot.model.User;
@@ -14,6 +15,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import static com.groww.chatbot.util.MiscUtil.*;
+import static org.springframework.beans.BeanUtils.copyProperties;
 
 /**
  * service class implementation for user
@@ -61,6 +65,22 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return userRepository
                 .findByEmail(email)
                 .map(user -> mapper.map(user, UserDetailsResponse.class))
+                .orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    @Override
+    public UserDetailsResponse editUser(EditUserRequest editUserRequest, String email) throws NotFoundException {
+        return userRepository
+                .findByEmail(email)
+                .map(user -> {
+                    copyProperties(editUserRequest, user, getNullPropertyNames(editUserRequest));
+                    if(!editUserRequest.getPassword().isBlank()) {
+                        user.setPassword(passwordEncoder
+                            .encode(editUserRequest.getPassword()));
+                    }
+                    userRepository.save(user);
+                    return mapper.map(user, UserDetailsResponse.class);
+                })
                 .orElseThrow(() -> new NotFoundException("User not found"));
     }
 

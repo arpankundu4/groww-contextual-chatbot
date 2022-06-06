@@ -30,7 +30,7 @@ class ProductRepositoryTest {
 
     private List<Product> products;
 
-    private List<String> productIds;
+    private String categoryId;
 
     @BeforeAll
     void beforeAll() {
@@ -45,37 +45,67 @@ class ProductRepositoryTest {
         // products list
         products = List.of(product);
 
-        // product ids
-        productIds = List.of(product.getId());
+        // persist to db
+        underTest.saveAll(products);
     }
 
     @Test
-    void checkIfReturnsProductsList_whenAllProductsFoundById() {
+    void checkIfReturnsProductsList_whenProductsFoundByCategoryId() {
         // given
-        underTest.saveAll(products);
+        categoryId = "category1";
         List<Product> expectedProducts = products;
 
         // when
-        List<Product> resultProducts = underTest.findAllById(productIds);
+        List<Product> resultProducts = underTest.findAllByCategoryId(categoryId);
 
         // then
         assertThat(resultProducts).isEqualTo(expectedProducts);
     }
 
     @Test
-    void checkIfReturnsEmptyList_whenNoProductsFoundById() {
+    void checkIfReturnsEmptyList_whenNoProductsFoundByCategoryId() {
         // given
+        categoryId = "category2";
         List<Product> expectedProducts = Collections.emptyList();
 
         // when
-        List<Product> resultProducts = underTest.findAllById(Collections.emptyList());
+        List<Product> resultProducts = underTest.findAllByCategoryId(categoryId);
 
         // then
         assertThat(resultProducts).isEqualTo(expectedProducts);
+    }
+
+    @Test
+    void checkIfDoesNotDeleteProducts_whenProductsNotFoundByCategoryId() {
+        // given
+        categoryId = "category2";
+
+        // when
+        underTest.deleteAllByCategoryId(categoryId);
+
+        // then
+        assertThat(underTest
+                .findAllByCategoryId(product.getCategoryId()))
+                .isNotEqualTo(Collections.emptyList());
+    }
+
+    @Test
+    void checkIfDeletesProducts_whenProductsFoundByCategoryId() {
+        // given
+        categoryId = "category1";
+
+        // when
+        underTest.deleteAllByCategoryId(categoryId);
+
+        // then
+        assertThat(underTest
+                .findAllByCategoryId(categoryId))
+                .isEqualTo(Collections.emptyList());
     }
 
     @AfterAll
     void afterAll() {
         underTest.deleteAll(products);
     }
+
 }

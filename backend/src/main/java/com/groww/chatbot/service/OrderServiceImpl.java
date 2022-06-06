@@ -43,7 +43,7 @@ public class OrderServiceImpl implements OrderService {
         return userRepository
                 .findByEmail(email)
                 .map(user -> orderRepository
-                .findAllById(user.getOrderIds()))
+                .findAllByUserId(user.getId()))
                 .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
@@ -59,16 +59,15 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
         // create order
-        Order order = mapper.map(placeOrderRequest, Order.class);
-        order.setProduct(product);
-        order.setUserId(user.getId());
-        order.setDate(LocalDate.now().toString());
-        order.setOrderValue(product.getPrice() * order.getQuantity());
-        order.setStatus("Processing");
-        order = orderRepository.save(order);
+        Order order = new Order(
+                null, product,
+                user.getId(),
+                LocalDate.now().toString(),
+                placeOrderRequest.getQuantity(),
+                product.getPrice() * placeOrderRequest.getQuantity(),
+                "Processing");
 
-        // add order reference to user
-        userRepository.save(user.addOrderId(order.getId()));
+        order = orderRepository.save(order);
 
         return mapper.map(order, PlaceOrderResponse.class);
     }

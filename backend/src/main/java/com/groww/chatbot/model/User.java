@@ -48,13 +48,4 @@ public class User {
 
     private String maritalStatus;
 
-    // reference to user's orders
-    private List<String> orderIds = new ArrayList<>();
-
-    // method to add order references to user
-    public User addOrderId(String orderId) {
-        this.orderIds.add(orderId);
-        return this;
-    }
-
 }

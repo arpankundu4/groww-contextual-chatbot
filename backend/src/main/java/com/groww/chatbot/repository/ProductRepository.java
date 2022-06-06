@@ -11,9 +11,9 @@ import java.util.List;
  */
 public interface ProductRepository extends MongoRepository<Product, String> {
 
-    // override findAllById method
-    // to return list instead of iterable
-    @NonNull
-    List<Product> findAllById(@NonNull Iterable<String> ids);
+    // finds products by category id
+    List<Product> findAllByCategoryId(String categoryId);
+
+    void deleteAllByCategoryId(String categoryId);
 
 }

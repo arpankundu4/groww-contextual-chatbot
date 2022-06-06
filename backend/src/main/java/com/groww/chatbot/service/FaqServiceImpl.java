@@ -2,21 +2,24 @@ package com.groww.chatbot.service;
 
 import com.groww.chatbot.exception.AccessDeniedException;
 import com.groww.chatbot.exception.NotFoundException;
-import com.groww.chatbot.exchanges.Context;
-import com.groww.chatbot.exchanges.FaqCategoryResponse;
-import com.groww.chatbot.exchanges.FaqResponse;
+import com.groww.chatbot.exchanges.*;
 import com.groww.chatbot.model.Faq;
-import com.groww.chatbot.model.FaqCategory;
+import com.groww.chatbot.model.Category;
 import com.groww.chatbot.model.Order;
 import com.groww.chatbot.model.User;
 import com.groww.chatbot.repository.*;
+import com.groww.chatbot.util.MiscUtil;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.groww.chatbot.util.MiscUtil.getNullPropertyNames;
+import static org.springframework.beans.BeanUtils.copyProperties;
 
 /**
  * Service class implementation for FAQ
@@ -42,87 +45,21 @@ public class FaqServiceImpl implements FaqService {
     private ProductRepository productRepository;
 
     @Autowired
-    private FaqCategoryRepository faqCategoryRepository;
+    private CategoryRepository categoryRepository;
 
     private final ModelMapper mapper = new ModelMapper();
 
     @Override
-    public List<FaqCategoryResponse> getFaqCategories(Context context) throws NotFoundException {
-        List<FaqCategory> faqCategories;
-        // for non logged-in user
-        if(context.getUserId() == null) {
-            // get only public categories
-            log.info("Getting public categories");
-            faqCategories = faqCategoryRepository
-                    .findAllByParentId(null)
-                    .stream()
-                    .filter(faqCategory -> !faqCategory.isPrivate())
-                    .collect(Collectors.toList());
-        } else {
-            // for logged-in user
-            // check if user id is valid
-            if(!userRepository.existsById(context.getUserId())) {
-                throw new NotFoundException("Context user id not found");
-            }
-            // get all categories
-            log.info("Getting all categories");
-            faqCategories = faqCategoryRepository.findAllByParentId(null);
-        }
-        // map & return FAQ categories response
-        return faqCategories
-                .stream()
-                .map(faqCategory -> mapper.map(faqCategory, FaqCategoryResponse.class))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<FaqCategoryResponse> getFaqSubcategories(String parentId, Context context)
-                                                         throws NotFoundException, AccessDeniedException {
-        List<FaqCategory> faqSubcategories;
-        // check if parent exists
-        FaqCategory parent = faqCategoryRepository
-                .findById(parentId)
-                .orElseThrow(() -> new NotFoundException("Parent not found"));
-        // for non-logged in user
-        if(context.getUserId() == null) {
-            if(parent.isPrivate()) {
-                throw new AccessDeniedException("Access denied to private parent");
-            }
-            // get only public subcategories
-            log.info("Getting public subcategories");
-            faqSubcategories = faqCategoryRepository
-                    .findAllByParentId(parentId)
-                    .stream()
-                    .filter(faqSubcategory -> !faqSubcategory.isPrivate())
-                    .collect(Collectors.toList());
-        } else {
-            // for logged-in user
-            // check if user id is valid
-            if(!userRepository.existsById(context.getUserId())) {
-                throw new NotFoundException("Context user id not found");
-            }
-            // get all subcategories
-            log.info("Getting all subcategories");
-            faqSubcategories = faqCategoryRepository.findAllByParentId(parentId);
-        }
-        // map & return FAQ subcategories response
-        return faqSubcategories
-                .stream()
-                .map(faqSubcategory -> mapper.map(faqSubcategory, FaqCategoryResponse.class))
-                .collect(Collectors.toList());
-    }
-
-    @Override
     public List<FaqResponse> getFaqsBySubcategory(String parentId, Context context)
-                                          throws NotFoundException, AccessDeniedException {
+            throws NotFoundException, AccessDeniedException {
         List<Faq> faqs;
         // check if parent exists
-        FaqCategory faqSubcategory = faqCategoryRepository
+        Category subcategory = categoryRepository
                 .findById(parentId)
                 .orElseThrow(() -> new NotFoundException("Subcategory not found"));
         // for non logged-in user
         if(context.getUserId() == null) {
-            if(faqSubcategory.isPrivate()) {
+            if(subcategory.isHidden()) {
                 throw new AccessDeniedException("Access denied to private subcategory");
             }
             // get only public FAQs
@@ -130,7 +67,7 @@ public class FaqServiceImpl implements FaqService {
             faqs = faqRepository
                     .findAllByParentId(parentId)
                     .stream()
-                    .filter(faq -> !faq.isPrivate())
+                    .filter(faq -> !faq.isHidden())
                     .collect(Collectors.toList());
         } else {
             // for logged-in user
@@ -159,7 +96,7 @@ public class FaqServiceImpl implements FaqService {
             throw new NotFoundException("Product not found");
         }
         // add generic product FAQs
-        log.info("Adding generic product FAQs");
+        log.info("Getting generic product FAQs");
         faqs = faqRepository.findAllByParentId(productId);
         // for logged-in user
         if(userId != null) {
@@ -168,20 +105,27 @@ public class FaqServiceImpl implements FaqService {
                     .findById(userId)
                     .orElseThrow(() -> new NotFoundException("Context user id not found"));
             // add user-specific FAQs
-            log.info("Adding user's order history specific FAQs");
+            log.info("Getting user's order history specific FAQs");
             orderRepository
-                    .findAllById(user.getOrderIds())
+                    .findAllByUserId(userId)
                     .stream()
                     .filter(order -> Objects.equals(order.getProduct().getId(), productId))
                     .map(Order::getStatus)
                     .collect(Collectors.toSet())
                     .forEach(status -> {
                         // for each status add relevant faqs
-                        faqCategoryRepository
+                        categoryRepository
                                 .findByTitle(status)
-                                .ifPresent(faqCategory ->
-                                 faqs.addAll(faqRepository.findAllByParentId(faqCategory.getId())));
+                                .ifPresent(category -> faqs.addAll(faqRepository
+                                .findAllByParentId(category.getId())));
                     });
+            log.info("Getting user's KYC specific FAQs");
+            if(!user.isKycDone()) {
+                categoryRepository
+                        .findByTitle("KYC")
+                        .ifPresent(category -> faqs.addAll(faqRepository
+                        .findAllByParentId(category.getId())));
+            }
         }
         // map & return FAQs response
         return faqs
@@ -199,15 +143,44 @@ public class FaqServiceImpl implements FaqService {
         // get order status specific FAQs
         log.info("Getting order status specific FAQs");
         List<Faq> faqs = new ArrayList<>();
-        faqCategoryRepository
+        categoryRepository
                 .findByTitle(order.getStatus())
-                .ifPresent(faqCategory ->
-                 faqs.addAll(faqRepository.findAllByParentId(faqCategory.getId())));
+                .ifPresent(category ->
+                 faqs.addAll(faqRepository.findAllByParentId(category.getId())));
         // map & return FAQs response
         return faqs
                 .stream()
                 .map(faq -> mapper.map(faq, FaqResponse.class))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Faq addFaq(AddFaqRequest addFaqRequest, String parentId) throws NotFoundException {
+        if(!categoryRepository.existsById(parentId) && !productRepository.existsById(parentId)) {
+            throw new NotFoundException("Parent not found");
+        }
+        Faq faq = mapper.map(addFaqRequest, Faq.class);
+        faq.setParentId(parentId);
+        return faqRepository.save(faq);
+    }
+
+    @Override
+    public Faq editFaq(EditFaqRequest editFaqRequest, String faqId) throws NotFoundException {
+        return faqRepository
+                .findById(faqId)
+                .map(faq -> {
+                    copyProperties(editFaqRequest, faq, getNullPropertyNames(editFaqRequest));
+                    return faqRepository.save(faq);
+                })
+                .orElseThrow(() -> new NotFoundException("FAQ not found"));
+    }
+
+    @Override
+    public void deleteFaq(String faqId) throws NotFoundException {
+        Faq faq = faqRepository
+                .findById(faqId)
+                .orElseThrow(() -> new NotFoundException("FAQ not found"));
+        faqRepository.delete(faq);
     }
 
 }

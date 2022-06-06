@@ -4,6 +4,7 @@ import com.groww.chatbot.dto.GrowwUserDetails;
 import com.groww.chatbot.exception.AlreadyExistsException;
 import com.groww.chatbot.exception.GrowwAuthenticationException;
 import com.groww.chatbot.exception.NotFoundException;
+import com.groww.chatbot.exchanges.EditUserRequest;
 import com.groww.chatbot.exchanges.LoginRequest;
 import com.groww.chatbot.exchanges.LoginResponse;
 import com.groww.chatbot.exchanges.RegistrationRequest;
@@ -15,7 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -91,6 +91,19 @@ public class UserController {
         String email = jwtUtil.extractEmailFromAuthHeader(authorizationHeader);
         try {
             return ResponseEntity.ok(userService.getUser(email));
+        } catch (NotFoundException e) {
+            log.info(e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PatchMapping(EDIT_USER_URL)
+    public ResponseEntity<?> editUser(@RequestBody EditUserRequest editUserRequest,
+                                      @RequestHeader("Authorization") String authorizationHeader) {
+        log.info("Edit user account details request");
+        String email = jwtUtil.extractEmailFromAuthHeader(authorizationHeader);
+        try {
+            return ResponseEntity.ok(userService.editUser(editUserRequest, email));
         } catch (NotFoundException e) {
             log.info(e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);

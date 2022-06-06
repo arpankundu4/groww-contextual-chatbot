@@ -42,10 +42,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable()
+        http.cors()
+                .and()
+                .csrf().disable()
                 .authorizeRequests()
                 // permit only these endpoints
                 .antMatchers(WHITELISTED_URLS).permitAll()
+                // restrict admin APIs to ADMIN users only
+                .antMatchers(ADMIN_URLS).hasAuthority("ADMIN")
                 // authorize others
                 .anyRequest().authenticated()
                 // disable session creation

@@ -10,8 +10,7 @@ import java.util.List;
  */
 public interface OrderRepository extends MongoRepository<Order, String> {
 
-    // override findAllById method
-    // to return list instead of iterable
-    List<Order> findAllById(Iterable<String> ids);
+    // finds orders by user id
+    List<Order> findAllByUserId(String userId);
 
 }

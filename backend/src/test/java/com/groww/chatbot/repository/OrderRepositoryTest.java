@@ -28,50 +28,47 @@ class OrderRepositoryTest {
     @Autowired
     private OrderRepository underTest;
 
-    private Order order;
+    private String userId;
 
     private List<Order> orders;
-
-    private List<String> orderIds;
 
     @BeforeAll
     void beforeAll() {
         // create order
-        order = new Order("order1",
-                               new Product(),
-                      "user1",
-                        "25/05/2022",
-                     10,
-                   10000,
-                      "Processing");
+        Order order = new Order("order1",
+                                new Product(),
+                                "user1",
+                                "25/05/2022",
+                                10,
+                                10000,
+                                "Processing");
 
         // create orders list
         orders = List.of(order);
-
-        // create order ids list
-        orderIds = List.of(order.getId());
     }
 
     @Test
-    void checkIfReturnsOrdersList_whenAllOrdersFoundById() {
+    void checkIfReturnsOrdersList_whenAllOrdersFoundByUserId() {
         // given
+        userId = "user1";
         underTest.saveAll(orders);
         List<Order> expectedOrders = orders;
 
         // when
-        List<Order> resultOrders = underTest.findAllById(orderIds);
+        List<Order> resultOrders = underTest.findAllByUserId(userId);
 
         // then
         assertThat(resultOrders).isEqualTo(expectedOrders);
     }
 
     @Test
-    void checkIfReturnsEmptyList_whenNoOrdersFoundById() {
+    void checkIfReturnsEmptyList_whenNoOrdersFoundByUserId() {
         // given
+        userId = "user2";
         List<Order> expectedOrders = Collections.emptyList();
 
         // when
-        List<Order> resultOrders = underTest.findAllById(Collections.emptyList());
+        List<Order> resultOrders = underTest.findAllByUserId(userId);
 
         // then
         assertThat(resultOrders).isEqualTo(expectedOrders);

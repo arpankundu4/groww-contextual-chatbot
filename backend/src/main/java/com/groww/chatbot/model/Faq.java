@@ -29,6 +29,6 @@ public class Faq {
     private String answer;
 
     @NotNull
-    private boolean isPrivate;
+    private boolean hidden;
 
 }

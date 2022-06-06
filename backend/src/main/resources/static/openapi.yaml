@@ -1,0 +1,927 @@
+openapi: 3.0.3
+
+info:
+  title: Groww API
+  description: Groww API Docs - Contextual Chatbot Externship (**Crio Launch 2022**)
+  contact:
+    name: the Developer (Arpan Kundu)
+    email: arpan.kundu.4@gmail.com
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+  version: '1.0.0'
+
+servers:
+  - url: http://localhost:8081
+
+tags:
+  - name: auth
+    description: APIs for login & register
+  - name: user
+    description: APIs for logged-in user
+  - name: products
+    description: APIs for products
+  - name: chatbot
+    description: APIs for chatbot
+  - name: admin
+    description: APIs for admin
+
+paths:
+
+  /api/login:
+    post:
+      tags:
+        - auth
+      summary: Login user
+      operationId: login
+      requestBody:
+        description: Accepts JSON payload as shown below.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Invalid login request body
+        '403':
+          description: Invalid login credentials
+
+  /api/register:
+    post:
+      tags:
+        - auth
+      summary: Register user
+      operationId: register
+      requestBody:
+        description: Accepts JSON payload as shown below.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationRequest'
+        required: true
+      responses:
+        '201':
+          description: Registration successful
+        '400':
+          description: Invalid registration request body
+        '409':
+          description: User already exists with email id
+
+  /api/user/account:
+    get:
+      tags:
+        - user
+      summary: Get logged-in user's details
+      operationId: getUser
+      responses:
+        '200':
+          description: User details fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailsResponse'
+        '404':
+          description: User not found
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+
+  /api/user/account/edit:
+    patch:
+      tags:
+        - user
+      summary: Edit logged-in user's details
+      operationId: editUser
+      requestBody:
+        description: Accepts JSON payload as shown below.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditUserRequest'
+        required: true
+      responses:
+        '200':
+          description: User details edited successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailsResponse'
+        '404':
+          description: User not found
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+
+  /api/user/orders:
+    get:
+      tags:
+        - user
+      summary: Get logged-in user's orders
+      operationId: getOrders
+      responses:
+        '200':
+          description: User orders fetched successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+        '404':
+          description: User not found
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+
+  /api/user/place-order:
+    post:
+      tags:
+        - user
+      summary: Place order for logged-in user
+      operationId: placeOrder
+      requestBody:
+        description: Accepts JSON payload as shown below.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaceOrderRequest'
+        required: true
+      responses:
+        '200':
+          description: Order placed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaceOrderResponse'
+        '404':
+          description: Product or user not found
+        '403':
+          description: Forbidden
+      security:
+        - bearerAuth: []
+
+  /api/products/categories/{categoryId}:
+    get:
+      tags:
+        - products
+      summary: Get products by category id
+      operationId: getProducts
+      parameters:
+        - name: categoryId
+          in: path
+          description: id of category for which products are to be fetched
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Products fetched successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        '404':
+          description: Category not found
+
+  /api/products/{productId}:
+    get:
+      tags:
+        - products
+      summary: Get product by id
+      operationId: getProduct
+      parameters:
+        - name: productId
+          in: path
+          description: id of product which is to be fetched
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
+
+  /api/categories:
+    post:
+      tags:
+        - chatbot
+      summary: Get categories / subcategories
+      operationId: getCategories
+      parameters:
+        - name: parentId
+          in: query
+          description: parent id for fetching subcategories (**not required for fetching categories**)
+          required: false
+          schema:
+            type: string
+      requestBody:
+        description: Pass **only userId JSON** in case of **logged-in user**, else pass **empty JSON**
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Context'
+        required: true
+      responses:
+        '200':
+          description: Categories / subcategories fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '400':
+          description: access requested to hidden subcategory without valid user id
+        '404':
+          description: parent or context's user not found
+
+  /api/faqs:
+    post:
+      tags:
+        - chatbot
+      summary: Get FAQs
+      operationId: getFaqs
+      parameters:
+        - name: parentId
+          in: query
+          description: parent id for fetching FAQs by subcategory (**not required for fetching product / order FAQs**)
+          required: false
+          schema:
+            type: string
+      requestBody:
+        description: |
+          1. Pass **userId** in JSON in case of **logged-in user**
+          2. Pass **productId** in JSON when fetching **product FAQs**
+          3. Pass **orderId** in JSON when fetching **order FAQs**
+          4. Do not pass **parentId query param** when fetching **product / order FAQs**
+          5. Pass **empty JSON** when fetching **FAQs** by **subcategory (with parentId query param)**
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Context'
+        required: true
+      responses:
+        '200':
+          description: FAQs fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FaqResponse'
+        '400':
+          description: access requested to hidden FAQs without valid user id
+        '404':
+          description: parent / context's fields not found
+
+  /api/admin/category/add:
+    post:
+      tags:
+        - admin
+      summary: Add category / subcategory
+      operationId: addCategory
+      parameters:
+        - name: parentId
+          in: query
+          description: id of parent category for adding subcategory to it (**not required when adding categories**)
+          required: false
+          schema:
+            type: string
+      requestBody:
+        description: Add category / subcategory request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddCategoryRequest'
+        required: true
+      responses:
+        '201':
+          description: Category / subcategory added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          description: Invalid request body
+        '404':
+          description: Parent category not found (when adding subcategories)
+      security:
+        - bearerAuth: []
+
+  /api/admin/category/edit/{categoryId}:
+    patch:
+      tags:
+        - admin
+      summary: Edit category / subcategory
+      operationId: editCategory
+      parameters:
+        - name: categoryId
+          in: path
+          description: id of category / subcategory which is to be edited
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Edit category / subcategory request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditCategoryRequest'
+        required: true
+      responses:
+        '200':
+          description: Category / subcategory edited successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '404':
+          description: Category / subcategory not found
+      security:
+        - bearerAuth: []
+
+  /api/admin/category/delete/{categoryId}:
+    delete:
+      tags:
+        - admin
+      summary: Delete category / subcategory
+      operationId: deleteCategory
+      parameters:
+        - name: categoryId
+          in: path
+          description: id of category / subcategory which is to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Category / subcategory deleted successfully
+        '404':
+          description: Category / subcategory not found
+      security:
+        - bearerAuth: []
+
+  /api/admin/faq/add/{parentId}:
+    post:
+      tags:
+        - admin
+      summary: Add FAQ
+      operationId: addFaq
+      parameters:
+        - name: parentId
+          in: path
+          description: id of parent subcategory / product for adding FAQ to it
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Add FAQ request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddFaqRequest'
+        required: true
+      responses:
+        '201':
+          description: FAQ added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Faq'
+        '400':
+          description: Invalid request body
+        '404':
+          description: Parent subcategory / product not found
+      security:
+        - bearerAuth: []
+
+  /api/admin/faq/edit/{faqId}:
+    patch:
+      tags:
+        - admin
+      summary: Edit FAQ
+      operationId: editFaq
+      parameters:
+        - name: faqId
+          in: path
+          description: id of FAQ to be edited
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Edit FAQ request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditFaqRequest'
+        required: true
+      responses:
+        '200':
+          description: FAQ edited successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Faq'
+        '404':
+          description: FAQ not found
+      security:
+        - bearerAuth: []
+
+  /api/admin/faq/delete/{faqId}:
+    delete:
+      tags:
+        - admin
+      summary: Delete FAQ
+      operationId: deleteFaq
+      parameters:
+        - name: faqId
+          in: path
+          description: id of FAQ to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: FAQ deleted successfully
+        '404':
+          description: FAQ not found
+      security:
+        - bearerAuth: []
+
+  /api/admin/product/add/{categoryId}:
+    post:
+      tags:
+        - admin
+      summary: Add product
+      operationId: addProduct
+      parameters:
+        - name: categoryId
+          in: path
+          description: id of category for adding product to it
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Add product request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddProductRequest'
+        required: true
+      responses:
+        '201':
+          description: Product added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Invalid request body
+        '404':
+          description: Category not found
+      security:
+        - bearerAuth: []
+
+  /api/admin/product/edit/{productId}:
+    patch:
+      tags:
+        - admin
+      summary: Edit product
+      operationId: editProduct
+      parameters:
+        - name: productId
+          in: path
+          description: id of product to be edited
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Edit product request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditProductRequest'
+        required: true
+      responses:
+        '200':
+          description: Product edited successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
+      security:
+        - bearerAuth: []
+
+  /api/admin/product/delete/{productId}:
+    delete:
+      tags:
+        - admin
+      summary: Delete product
+      operationId: deleteProduct
+      parameters:
+        - name: productId
+          in: path
+          description: id of product to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product deleted successfully
+        '404':
+          description: Product not found
+      security:
+        - bearerAuth: []
+
+components:
+  schemas:
+
+    Category:
+      title: Category
+      required:
+        - title
+        - hidden
+      type: object
+      properties:
+        id:
+          type: string
+        parentId:
+          type: string
+        title:
+          type: string
+        hidden:
+          type: boolean
+
+    Faq:
+      title: Faq
+      required:
+        - parentId
+        - question
+        - answer
+        - hidden
+      type: object
+      properties:
+        id:
+          type: string
+        parentId:
+          type: string
+        question:
+          type: string
+        answer:
+          type: string
+        hidden:
+          type: boolean
+
+    Context:
+      title: Context
+      description: Used to set logged-in user's context
+      type: object
+      properties:
+        userId:
+          type: string
+        productId:
+          type: string
+        orderId:
+          type: string
+
+    CategoryResponse:
+      title: CategoryResponse
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+
+    FaqResponse:
+      title: FaqResponse
+      type: object
+      properties:
+        id:
+          type: string
+        question:
+          type: string
+        answer:
+          type: string
+
+    Product:
+      title: Product
+      required:
+        - title
+        - categoryId
+        - price
+        - logoUrl
+        - chartUrl
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        categoryId:
+          type: string
+        price:
+          type: number
+          format: float
+          minimum: 0
+          exclusiveMinimum: true
+        logoUrl:
+          type: string
+        chartUrl:
+          type: string
+
+    Order:
+      title: Order
+      required:
+        - product
+        - userId
+        - date
+        - quantity
+        - orderValue
+        - status
+      type: object
+      properties:
+        id:
+          type: string
+        product:
+          type: object
+          $ref: '#/components/schemas/Product'
+        userId:
+          type: string
+        date:
+          type: string
+          format: 'YYYY-MM-DD'
+        quantity:
+          type: integer
+          format: int32
+          minimum: 0
+          exclusiveMinimum: true
+        orderValue:
+          type: number
+          format: double
+          minimum: 0
+          exclusiveMinimum: true
+        status:
+          type: string
+
+    User:
+      title: User
+      type: object
+      required:
+        - name
+        - email
+        - password
+        - role
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+        pan:
+          type: string
+        mobileNumber:
+          type: string
+          description: 10-digit mobile number
+        kycDone:
+          type: boolean
+          default: false
+        dateOfBirth:
+          type: string
+        gender:
+          type: string
+        maritalStatus:
+          type: string
+
+    LoginRequest:
+      title: LoginRequest
+      required:
+        - email
+        - password
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    LoginResponse:
+      title: LoginResponse
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT token to access secure endpoints
+        userId:
+          type: string
+        name:
+          type: string
+
+    RegistrationRequest:
+      title: RegistrationRequest
+      required:
+        - email
+        - name
+        - password
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        mobileNumber:
+          type: string
+        dateOfBirth:
+          type: string
+        pan:
+          type: string
+        gender:
+          type: string
+
+    UserDetailsResponse:
+      title: UserDetailsResponse
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        mobileNumber:
+          type: string
+        dateOfBirth:
+          type: string
+        pan:
+          type: string
+        gender:
+          type: string
+        kycStatus:
+          type: boolean
+        maritalStatus:
+          type: string
+
+    EditUserRequest:
+      title: EditUserRequest
+      type: object
+      properties:
+        name:
+          type: string
+        password:
+          type: string
+        pan:
+          type: string
+        mobileNumber:
+          type: string
+        dateOfBirth:
+          type: string
+        gender:
+          type: string
+        maritalStatus:
+          type: string
+
+    PlaceOrderRequest:
+      title: PlaceOrderRequest
+      required:
+        - productId
+        - quantity
+      type: object
+      properties:
+        productId:
+          type: string
+        quantity:
+          type: integer
+          format: int32
+          minimum: 0
+          exclusiveMinimum: true
+
+    PlaceOrderResponse:
+      title: PlaceOrderResponse
+      type: object
+      properties:
+        id:
+          type: string
+        product:
+          type: object
+          $ref: '#/components/schemas/Product'
+        date:
+          type: string
+        orderValue:
+          type: number
+          format: double
+        status:
+          type: string
+
+    AddCategoryRequest:
+      title: AddCategoryRequest
+      required:
+        - hidden
+        - title
+      type: object
+      properties:
+        title:
+          type: string
+        hidden:
+          type: boolean
+
+    EditCategoryRequest:
+      title: EditCategoryRequest
+      type: object
+      properties:
+        title:
+          type: string
+        parentId:
+          type: string
+        hidden:
+          type: boolean
+
+    AddFaqRequest:
+      title: AddFaqRequest
+      required:
+        - answer
+        - hidden
+        - question
+      type: object
+      properties:
+        question:
+          type: string
+        answer:
+          type: string
+        hidden:
+          type: boolean
+
+    EditFaqRequest:
+      title: EditFaqRequest
+      type: object
+      properties:
+        parentId:
+          type: string
+        question:
+          type: string
+        answer:
+          type: string
+        hidden:
+          type: boolean
+
+    AddProductRequest:
+      title: AddProductRequest
+      required:
+        - chartUrl
+        - logoUrl
+        - price
+        - title
+      type: object
+      properties:
+        title:
+          type: string
+        price:
+          type: number
+          format: float
+          minimum: 0
+          exclusiveMinimum: true
+        chartUrl:
+          type: string
+        logoUrl:
+          type: string
+
+    EditProductRequest:
+      title: EditProductRequest
+      type: object
+      properties:
+        categoryId:
+          type: string
+        title:
+          type: string
+        price:
+          type: number
+          format: float
+        logoUrl:
+          type: string
+        chartUrl:
+          type: string
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

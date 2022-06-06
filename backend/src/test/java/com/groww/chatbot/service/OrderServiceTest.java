@@ -14,7 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -47,10 +46,10 @@ class OrderServiceTest {
     void beforeAll() {
         // test user
         user = new User();
+        user.setId("user1");
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void checkIfGetsOrders_whenValidEmail() throws NotFoundException {
         // given
         String email = "user@groww.in";
@@ -63,11 +62,11 @@ class OrderServiceTest {
         underTest.getOrders(email);
 
         // then
-        // capture order ids list
-        ArgumentCaptor<List<String>> orderIdsCaptor = ArgumentCaptor.forClass(List.class);
-        verify(orderRepository).findAllById(orderIdsCaptor.capture());
-        // compare with actual list
-        assertThat(orderIdsCaptor.getValue()).isEqualTo(user.getOrderIds());
+        // capture user id
+        ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
+        verify(orderRepository).findAllByUserId(userIdCaptor.capture());
+        // compare with actual user id
+        assertThat(userIdCaptor.getValue()).isEqualTo(user.getId());
     }
 
     @Test
@@ -86,8 +85,8 @@ class OrderServiceTest {
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage("User not found");
 
-        // verify findAllById is not invoked after this
-        verify(orderRepository, never()).findAllById(any());
+        // verify findAllByUserId is not invoked after this
+        verify(orderRepository, never()).findAllByUserId(any());
     }
 
 }

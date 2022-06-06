@@ -1,10 +1,9 @@
 package com.groww.chatbot.controller;
 
 import com.groww.chatbot.exception.AccessDeniedException;
-import com.groww.chatbot.exception.BadRequestException;
 import com.groww.chatbot.exception.NotFoundException;
 import com.groww.chatbot.exchanges.Context;
-import com.groww.chatbot.service.FaqService;
+import com.groww.chatbot.service.CategoryService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,39 +15,27 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static com.groww.chatbot.config.ApiRoutes.*;
 
-/**
- * controller class
- * for FAQ related APIs
- *
- * refer to ApiRoutes in com.groww.chatbot.config
- * for all API URLs
- */
-
 @Log4j2
 @RestController
-public class FaqController {
+public class CategoryController {
 
     @Autowired
-    private FaqService faqService;
+    private CategoryService categoryService;
 
-    @PostMapping(GET_FAQS_URL)
-    public ResponseEntity<?> getFaqs(@RequestBody Context context,
-                                     @RequestParam(required = false) String parentId) {
+    @PostMapping(GET_CATEGORIES_URL)
+    public ResponseEntity<?> getFaqCategories(@RequestBody Context context,
+                                              @RequestParam(required = false) String parentId) {
         try {
-            if(parentId != null) {
-                return ResponseEntity.ok(faqService.getFaqsBySubcategory(parentId, context));
+            if(parentId == null) {
+                log.info("Get categories request");
+                return ResponseEntity.ok(categoryService.getCategories(context));
             }
-            if(context.getProductId() != null) {
-                return ResponseEntity.ok(faqService.getProductFaqs(context));
-            }
-            if(context.getOrderId() != null) {
-                return ResponseEntity.ok(faqService.getOrderFaqs(context));
-            }
-            throw new BadRequestException("Invalid Request");
+            log.info("Get subcategories request");
+            return ResponseEntity.ok(categoryService.getSubcategories(parentId, context));
         } catch (NotFoundException e) {
             log.error(e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (AccessDeniedException | BadRequestException e) {
+        } catch (AccessDeniedException e) {
             log.error(e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
