@@ -36,6 +36,8 @@ This project is a part of **Crio Launch (2022) Externship** with **Groww**.
 1. Get FAQ categories / subcategories (with context)
 2. Get FAQs (with context)
 
+> Try out the APIs at the [OpenAPI Docs](http://localhost:8081/swagger-ui/)
+
 ### Tech Stack
 
 1. Java
