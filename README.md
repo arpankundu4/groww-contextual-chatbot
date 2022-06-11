@@ -95,6 +95,8 @@ browsing experience.
 <img width="500" alt="groww-chatbot-flows" src="https://user-images.githubusercontent.com/104189687/173180848-0e829c58-94e5-4d9a-9dcc-5bae26f77ed3.png">
 </div>
 
+<br>
+
 - Database Structure
 
 <div align="center">
