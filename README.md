@@ -217,3 +217,8 @@ From terminal:
 3. Type `chmod +x server_run.sh`
 4. Type `./server_run.sh`
 5. Server will start on `localhost:8081`
+
+#### Demo account
+
+- email : ```arpan@groww.in```
+- password : ```password```
