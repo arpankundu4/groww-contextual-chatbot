@@ -1,1 +1,1 @@
-{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"groww.faqs"}],"uuid":"ad921c9535754f1eabcddfc18f77058e","collectionName":"faqs","type":"collection"}
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"groww.faqs"},{"v":{"$numberInt":"2"},"key":{"parentId":{"$numberInt":"1"}},"name":"parentId","ns":"groww.faqs"}],"uuid":"51268c35aa454aeeb3cea8bcb32d0375","collectionName":"faqs","type":"collection"}

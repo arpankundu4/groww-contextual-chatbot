@@ -2,6 +2,7 @@ package com.groww.chatbot.model;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotBlank;
@@ -19,6 +20,7 @@ public class Faq {
     @Id
     private String id;
 
+    @Indexed
     @NotBlank
     private String parentId;
 

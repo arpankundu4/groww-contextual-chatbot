@@ -1,1 +1,0 @@
-{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"groww.faq-categories"}],"uuid":"03006d6ba3e047628101365362272e1d","collectionName":"faq-categories","type":"collection"}
