@@ -27,6 +27,7 @@ This project is a part of **[Crio Launch (2022) Externship](https://www.crio.do/
 ### Table of Contents
 
 - [About](#about)
+- [Demo](#demo)
 - [Features](#features)
 - [System Design](#system-design)
 - [Contextual Responses](#contextual-responses)
@@ -53,6 +54,10 @@ browsing experience.
 <div align="center">
 <img width="500" alt="stocks-product-page" src="https://user-images.githubusercontent.com/104189687/173176992-30777933-b619-405b-aad3-5608fca7c343.png">
 </div>
+
+### Demo
+
+```Demo Video``` **https://www.loom.com/share/d14a2da0d8eb44adabe486704bed919f**
 
 ### Features
 
@@ -220,5 +225,5 @@ From terminal:
 
 #### Demo account
 
-- email : ```arpan@groww.in```
-- password : ```password```
+- email : ```test@groww.in```
+- password : ```test```
